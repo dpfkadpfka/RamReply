@@ -18,3 +18,8 @@ jobs:
       - run: npx electron-builder --win nsis --x64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 릴리스 공개
+        shell: bash
+        run: gh release edit "v$(node -p "require('./package.json').version")" --draft=false --latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
