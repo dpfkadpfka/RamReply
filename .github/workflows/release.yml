@@ -1,7 +1,10 @@
 name: release
+# package.json의 version을 올려 main에 올리면 새 버전이 빌드·배포됨
 on:
+  workflow_dispatch:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: ['package.json']
 permissions:
   contents: write
 jobs:
