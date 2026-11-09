@@ -1,0 +1,55 @@
+{
+  "name": "ramreply",
+  "productName": "RamReply",
+  "version": "1.0.0",
+  "description": "하이톡 학부모 메시지 답장 도우미",
+  "author": "김예람",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "38.4.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "kr.yeram.ramreply",
+    "productName": "RamReply",
+    "artifactName": "RamReply-Setup-${version}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "inject.js",
+      "drafts.mjs",
+      "assets/**",
+      "*.html"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "RamReply"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "dpfkadpfka",
+        "repo": "RamReply"
+      }
+    ]
+  },
+  "repository": "https://github.com/dpfkadpfka/RamReply",
+  "dependencies": {
+    "electron-updater": "6.6.2"
+  }
+}

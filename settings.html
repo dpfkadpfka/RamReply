@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>RamReply 설정</title><link rel="stylesheet" href="assets/ui.css"><link rel="icon" href="assets/icon.png"></head>
+<body><div class="wrap">
+  <h1><img src="assets/icon.png" alt="">RamReply <span style="font-size:13px;font-weight:500;color:#7a8496">하이톡 답장 도우미 <span id="ver"></span></span></h1>
+  <p class="sub">하이톡에 학부모 메시지가 오면 답장 초안을 만들어 카카오톡과 PC 알림으로 물어봐요. [보내기]를 누르면 하이톡으로 보내요. 이 창을 닫아도 화면 오른쪽 아래 트레이에서 계속 돌아가요.</p>
+
+  <div class="card">
+    <h2>시작하기</h2>
+    <div class="row"><div class="t"><b>1. 하이클래스 로그인</b><span>[로그인하기]를 눌러 열린 창에서 하이클래스에 로그인해요. 로그인이 끝나면 창이 저절로 숨어요.</span></div>
+      <button class="sec" id="openHitalk">로그인하기</button></div>
+    <div class="row"><div class="t"><b>2. 카카오톡 연결</b><span id="kakaoDesc">카카오톡 '나에게 보내기'로 알림을 받아요.</span></div>
+      <div><span id="kakaoState" class="pill wait">확인 중</span> <button id="kakaoBtn">카카오 연결</button></div></div>
+    <div class="row"><div class="t"><b>3. 테스트</b><span>가짜 학부모 메시지로 카톡·PC 알림이 오는지 확인해요. 실제로 하이톡에 보내지는 않아요.</span></div>
+      <button class="sec" id="test">테스트 알림 보내기</button></div>
+    <div class="row"><div class="t"><b>지금 상태</b><span id="scanState">-</span></div></div>
+  </div>
+
+  <div class="card">
+    <h2>알림 설정</h2>
+    <div class="row"><div class="t"><b>도우미 켜기</b><span>끄면 메시지를 확인하지 않아요.</span></div><label class="sw"><input type="checkbox" data-k="enabled"><i></i></label></div>
+    <div class="row"><div class="t"><b>카카오톡으로 물어보기</b></div><label class="sw"><input type="checkbox" data-k="kakao"><i></i></label></div>
+    <div class="row"><div class="t"><b>PC 알림으로 물어보기</b><span>컴퓨터 앞에서 바로 [이대로 보내기]를 누를 수 있어요.</span></div><label class="sw"><input type="checkbox" data-k="pcNotify"><i></i></label></div>
+    <div class="row"><div class="t"><b>학생 메시지도 알리기</b><span>끄면 학부모 메시지만 알려요.</span></div><label class="sw"><input type="checkbox" data-k="students"><i></i></label></div>
+    <div class="row"><div class="t"><b>컴퓨터 켤 때 자동 시작</b><span>윈도우 시작 프로그램에 등록돼 창 없이 트레이에서 시작해요.</span></div><label class="sw"><input type="checkbox" data-k="autoStart"><i></i></label></div>
+    <div class="row"><div class="t"><b>기본 호칭</b><span>답장 첫인사에 들어가는 호칭이에요.</span></div><input type="text" data-k="title" style="width:140px"></div>
+  </div>
+
+  <div class="card">
+    <h2>예전 답장에서 배우기</h2>
+    <div class="row"><div class="t"><b>예전 답장으로 초안 만들기</b><span>하이톡에 직접 보냈던 답장 중 비슷한 메시지에 쓴 답장을 찾아 이름만 바꿔 써요. 없으면 아래 답장 틀을 써요.</span></div><label class="sw"><input type="checkbox" data-k="learnFromPast"><i></i></label></div>
+    <div class="row"><div class="t"><b>모은 답장</b><span id="exCount">-</span></div><button class="sec" id="learnNow">지금 다시 배우기</button></div>
+  </div>
+
+  <div class="card">
+    <h2>답장 틀</h2>
+    <p class="muted" style="margin-top:0">메시지에 낱말이 들어 있으면 그 유형의 답장을 써요. 위에서부터 먼저 맞는 유형을 써요.<br>
+      쓸 수 있는 말: <b>{호칭}</b> 학부모님 · <b>{이름}</b> 수완 · <b>{이가}</b> 수완이가 · <b>{이를}</b> 수완이를 · <b>{이에게}</b> 수완이에게</p>
+    <div id="rules"></div>
+    <div class="rule"><b>어디에도 안 맞을 때</b><label>답장</label><textarea id="fallback" rows="2"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button id="saveRules">답장 틀 저장</button><button class="sec" id="resetRules">처음 상태로</button></div>
+  </div>
+
+  <div class="card">
+    <h2>최근 기록</h2>
+    <div class="log" id="log"><span class="muted">아직 기록이 없어요.</span></div>
+  </div>
+</div>
+<script>
+
+const $ = (s) => document.querySelector(s);
+const send = (m) => window.api(m);
+
+let DEFAULTS = null;
+async function loadSettings() {
+  DEFAULTS = await send({ type: 'defaults' });
+  const s = await send({ type: 'getSettings' });
+  document.querySelectorAll('[data-k]').forEach((el) => {
+    const k = el.dataset.k;
+    if (el.type === 'checkbox') el.checked = !!s[k]; else el.value = s[k] ?? '';
+  });
+  renderRules(s.rules, s.fallback);
+  return s;
+}
+async function saveSettings(patch) { await send({ type: 'setSettings', patch }); }
+document.querySelectorAll('[data-k]').forEach((el) => {
+  el.addEventListener('change', () => saveSettings({ [el.dataset.k]: el.type === 'checkbox' ? el.checked : el.value.trim() }));
+});
+
+function renderRules(rules, fallback) {
+  $('#rules').innerHTML = '';
+  rules.forEach((r, i) => {
+    const d = document.createElement('div');
+    d.className = 'rule';
+    d.innerHTML = `<b></b><label>이 낱말이 있으면 (쉼표로 구분)</label><input type="text" class="w">
+      <label>답장</label><textarea class="r" rows="2"></textarea>`;
+    d.querySelector('b').textContent = r.label;
+    d.querySelector('.w').value = r.words.join(', ');
+    d.querySelector('.r').value = r.reply;
+    d.dataset.i = i;
+    $('#rules').appendChild(d);
+  });
+  $('#fallback').value = fallback;
+}
+$('#saveRules').onclick = async () => {
+  const base = (await send({ type: 'getSettings' })).rules;
+  const rules = [...document.querySelectorAll('#rules .rule')].map((d) => {
+    const r = { ...base[d.dataset.i] };
+    r.words = d.querySelector('.w').value.split(',').map((x) => x.trim()).filter(Boolean);
+    const nv = d.querySelector('.r').value.trim();
+    if (nv !== r.reply) delete r.replyIfDocs; // 직접 고치면 서류용 문장은 쓰지 않음
+    r.reply = nv;
+    return r;
+  });
+  await saveSettings({ rules, fallback: $('#fallback').value.trim() });
+  $('#saveRules').textContent = '저장했어요 ✓';
+  setTimeout(() => ($('#saveRules').textContent = '답장 틀 저장'), 1500);
+};
+$('#resetRules').onclick = async () => {
+  if (!confirm('답장 틀을 처음 상태로 되돌릴까요?')) return;
+  await saveSettings({ rules: DEFAULTS.rules, fallback: DEFAULTS.fallback });
+  renderRules(DEFAULTS.rules, DEFAULTS.fallback);
+};
+
+$('#learnNow').onclick = async () => {
+  $('#learnNow').textContent = '배우는 중… (1~2분)';
+  $('#learnNow').disabled = true;
+  const r = await send({ type: 'learnNow' });
+  $('#learnNow').disabled = false;
+  $('#learnNow').textContent = r?.ok === false ? '실패: 하이클래스 로그인을 확인하세요' : `대화방 ${r.rooms ?? 0}개 확인 ✓`;
+  setTimeout(() => ($('#learnNow').textContent = '지금 다시 배우기'), 4000);
+  refresh();
+};
+$('#openHitalk').onclick = () => send({ type: 'openHitalk' });
+$('#test').onclick = async () => {
+  $('#test').textContent = '보내는 중…';
+  const r = await send({ type: 'test' });
+  $('#test').textContent = r?.ok === false ? '실패: ' + r.error : '보냈어요 ✓ 카톡·PC 알림을 확인하세요';
+  setTimeout(() => ($('#test').textContent = '테스트 알림 보내기'), 4000);
+};
+
+async function refresh() {
+  const info = await send({ type: 'info' });
+  if (!info) return;
+  $('#exCount').textContent = info.examples ? `선생님 답장 ${info.examples}개를 모았어요. 안 읽은 대화방은 열지 않아요.` : '아직 모은 답장이 없어요. 로그인하면 자동으로 한 번 배워요.';
+  const ks = $('#kakaoState');
+  ks.textContent = info.kakao ? '연결됨' : '연결 안 됨';
+  ks.className = 'pill ' + (info.kakao ? 'ok' : 'no');
+  $('#kakaoBtn').textContent = info.kakao ? '연결 끊기' : '카카오 연결';
+  $('#kakaoBtn').onclick = async () => {
+    const r = await send({ type: info.kakao ? 'kakaoLogout' : 'kakaoLogin' });
+    if (r?.ok === false) alert('카카오 연결 실패: ' + r.error);
+    refresh();
+  };
+  const ago = info.lastScan ? Math.round((Date.now() - info.lastScan) / 1000) : null;
+  $('#scanState').textContent =
+    info.status === 'login' ? '하이클래스에 로그인이 필요해요. [로그인하기]를 눌러 주세요.' :
+    ago === null ? '하이클래스에 로그인하면 확인을 시작해요.' :
+    ago < 90 ? `하이톡을 확인하고 있어요 (마지막 확인 ${ago}초 전)` : `마지막 확인 ${Math.round(ago / 60)}분 전 — 인터넷 연결을 확인해 주세요.`;
+  const log = info.log || [];
+  if (log.length) {
+    $('#log').innerHTML = '';
+    log.forEach((l) => {
+      const d = document.createElement('div');
+      const t = new Date(l.t);
+      d.innerHTML = `<small></small><br><b></b> <span></span>`;
+      d.querySelector('small').textContent = `${t.getMonth() + 1}/${t.getDate()} ${t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} · ${l.label}`;
+      d.querySelector('b').textContent = l.room;
+      d.querySelector('span').textContent = l.msg.slice(0, 80);
+      $('#log').appendChild(d);
+    });
+  }
+}
+loadSettings();
+refresh();
+send({ type: 'version' }).then((v) => (document.getElementById('ver').textContent = 'v' + v));
+setInterval(refresh, 5000);
+
+</script>
+</body></html>

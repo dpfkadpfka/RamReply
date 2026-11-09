@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>답장 확인</title>
+<link rel="stylesheet" href="assets/ui.css">
+<style>
+body{background:#f3f6fa}
+.wrap{max-width:440px;padding:20px 18px}
+.label{font-size:13px;font-weight:700;margin:14px 0 6px}
+.bubble{background:#fff;border-radius:4px 16px 16px 16px;padding:12px 14px;line-height:1.6;white-space:pre-wrap;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+textarea{font-size:15px;line-height:1.6;min-height:150px;resize:vertical}
+button{width:100%;margin-top:8px;padding:13px;font-size:15px}
+.ghost{background:transparent;color:#7a8496}.ghost:hover{background:#e9edf4}
+.state{text-align:center;padding:40px 0;font-size:16px;font-weight:700}
+</style></head>
+<body><div class="wrap" id="root"><div class="state">불러오는 중…</div></div>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const root = document.getElementById('root');
+const esc = (s) => String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function done(text) { root.innerHTML = `<div class="state">${text}</div>`; setTimeout(() => window.close(), 1600); }
+(async () => {
+  const p = await window.api({ type: 'getPending', id });
+  if (!p) return done('이미 처리된 메시지예요');
+  root.innerHTML = `
+    <div class="label">${esc(p.room)}</div>
+    <div class="bubble">${esc(p.msg)}</div>
+    <div class="label">이렇게 답장할까요? <span class="muted" style="font-weight:400">(고칠 수 있어요)</span></div>
+    <textarea id="t">${esc(p.draft)}</textarea>
+    <button id="send">하이톡으로 보내기</button>
+    <button id="no" class="ghost">안 보내기</button>`;
+  document.getElementById('send').onclick = async (e) => {
+    e.target.disabled = true; e.target.textContent = '보내는 중…';
+    const r = await window.api({ type: 'approve', id, text: document.getElementById('t').value.trim() });
+    done(r.ok ? '보냈어요 ✓' : '보내지 못했어요. 하이톡에서 직접 보내 주세요.');
+  };
+  document.getElementById('no').onclick = async () => { await window.api({ type: 'reject', id }); done('보내지 않았어요'); };
+})();
+</script></body></html>

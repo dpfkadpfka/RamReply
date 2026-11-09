@@ -1,0 +1,29 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+*{box-sizing:border-box}
+body{margin:0;font-family:Pretendard,-apple-system,'Malgun Gothic',sans-serif;background:#f3f6fa;color:#1d2433;font-size:14px}
+.wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+h1 img{width:30px;height:30px}
+.sub{color:#7a8496;margin:0 0 22px}
+.card{background:#fff;border-radius:16px;padding:20px 22px;margin-bottom:14px;box-shadow:0 1px 3px rgba(20,30,60,.06)}
+.card h2{font-size:16px;margin:0 0 12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #eef1f6}
+.row:first-of-type{border-top:0}
+.row .t b{display:block;font-weight:600}.row .t span{color:#7a8496;font-size:13px}
+button{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:#2f6fed;color:#fff;transition:transform .1s,background .15s}
+button:hover{background:#1f5ad6}button:active{transform:scale(.97)}
+button.sec{background:#eef2fb;color:#2f6fed}button.sec:hover{background:#e0e8fa}
+input[type=text],textarea{width:100%;border:1.5px solid #d6deea;border-radius:10px;padding:9px 11px;font:inherit;background:#fff}
+input[type=text]:focus,textarea:focus{outline:none;border-color:#2f6fed}
+.sw{position:relative;width:44px;height:26px;flex:none}
+.sw input{display:none}.sw i{position:absolute;inset:0;background:#cfd6e2;border-radius:20px;transition:.2s;cursor:pointer}
+.sw i:after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+i{background:#2f6fed}.sw input:checked+i:after{left:21px}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.ok{background:#e3f6ec;color:#17924f}.no{background:#fdecec;color:#d23b3b}.wait{background:#eef2fb;color:#2f6fed}
+.rule{border:1px solid #e6ebf3;border-radius:12px;padding:12px;margin-top:10px}
+.rule label{font-size:12px;color:#7a8496;display:block;margin:8px 0 4px}
+.log{max-height:260px;overflow:auto}
+.log div{padding:8px 0;border-top:1px solid #eef1f6;font-size:13px}
+.log small{color:#7a8496}
+.muted{color:#7a8496}
